@@ -1,6 +1,6 @@
 # My Little Shortener
 
-A tiny personal URL shortener running on a Cloudflare Worker + KV.
+A tiny personal URL shortener that runs for free on a Cloudflare Worker + KV.
 
 ## Why
 
