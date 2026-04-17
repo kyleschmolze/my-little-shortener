@@ -5,12 +5,12 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.slice(1);
 
-    if (path === "admin" || path === "") return adminPage();
+    if (path === "admin" || path === "") return adminPage(env);
     if (path.startsWith("api/")) return handleApi(request, env, path.slice(4));
     if (path === "favicon.ico") return new Response(null, { status: 404 });
 
     const target = await env.LINKS.get(path);
-    if (!target) return adminPage();
+    if (!target) return adminPage(env);
     return Response.redirect(target, 302);
   },
 };
@@ -99,8 +99,11 @@ function json(obj, status = 200) {
   });
 }
 
-function adminPage() {
-  return new Response(ADMIN_HTML, {
+function adminPage(env) {
+  const title = env.TITLE || "My Little Shortner";
+  const safe = title.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  const heading = safe.replace(/\./g, '<span class="dot">.</span>');
+  return new Response(ADMIN_HTML.replace("{{TITLE}}", heading), {
     headers: { "content-type": "text/html; charset=utf-8" },
   });
 }
@@ -208,7 +211,7 @@ const ADMIN_HTML = `<!doctype html>
 </style>
 </head>
 <body>
-<h1>link<span class="dot">.</span>kyletns<span class="dot">.</span>com</h1>
+<h1>{{TITLE}}</h1>
 <div id="login">
   <input id="pw" type="password" placeholder="password" autocomplete="current-password">
   <button onclick="login(true)">unlock</button>
@@ -262,7 +265,10 @@ const ADMIN_HTML = `<!doctype html>
       msg.textContent = "copied: " + short;
       msg.className = "msg ok";
       try { await navigator.clipboard.writeText(short); } catch {}
-      refresh();
+      const existing = allEntries.findIndex((e) => e.code === r.data.code);
+      if (existing >= 0) allEntries[existing] = { ...allEntries[existing], url };
+      else allEntries.unshift({ code: r.data.code, url, created: Date.now() });
+      applyFilter();
     } else {
       msg.textContent = r.data.error || "error";
       msg.className = "msg err";
@@ -271,13 +277,11 @@ const ADMIN_HTML = `<!doctype html>
 
   async function del(code) {
     if (!confirm("delete /" + code + "?")) return;
-    await api("delete", "POST", { code });
-    refresh();
-  }
-
-  async function refresh() {
-    const r = await api("list", "GET");
-    if (r.ok) render(r.data.entries);
+    const r = await api("delete", "POST", { code });
+    if (r.ok) {
+      allEntries = allEntries.filter((e) => e.code !== code);
+      applyFilter();
+    }
   }
 
   function formatDate(ms) {
