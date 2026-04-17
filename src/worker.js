@@ -1,11 +1,11 @@
-const RESERVED = new Set(["admin", "api", "favicon.ico", "robots.txt", ""]);
+const RESERVED = new Set(["api", "favicon.ico", "robots.txt", ""]);
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const path = url.pathname.slice(1);
 
-    if (path === "admin" || path === "") return adminPage(env);
+    if (path === "") return adminPage(env);
     if (path.startsWith("api/")) return handleApi(request, env, path.slice(4));
     if (path === "favicon.ico") return new Response(null, { status: 404 });
 
