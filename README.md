@@ -47,10 +47,47 @@ In `wrangler.toml`:
 
 - **`name`** — the Worker name (also the default `*.workers.dev` subdomain). Change before first deploy.
 - **`kv_namespaces[0].id`** — the KV namespace id. Replace with the id printed by `wrangler kv namespace create LINKS`.
-- **`vars.TITLE`** — the heading shown on `/admin`. Defaults to `My Little Shortner` if unset. Dots in the title get accent-color styling (e.g. `link.example.com`).
+- **`vars.TITLE`** — the heading shown on `/`. Defaults to `My Little Shortner` if unset. Dots in the title get accent-color styling (e.g. `link.example.com`).
 
 
 Local dev: `npx wrangler dev` (set `ADMIN_PASSWORD` in `.dev.vars`).
+
+## TextExpander snippet
+
+Create a new snippet with content type **Shell Script**, then paste this in (replace `YOUR.DOMAIN` and `YOURPASSWORD`). Copy a URL, fire the snippet, and it replaces itself with the short URL (also copied to clipboard):
+
+```bash
+#! /bin/bash
+URL="$(/usr/bin/pbpaste)"
+RESP=$(/usr/bin/curl -s -X POST "https://YOUR.DOMAIN/api/create" \
+  -H "Authorization: Bearer YOURPASSWORD" \
+  -H "content-type: application/json" \
+  -d "{\"url\":\"$URL\"}")
+CODE=$(echo "$RESP" | /usr/bin/sed -n 's/.*"code":"\([^"]*\)".*/\1/p')
+if [ -n "$CODE" ]; then
+  SHORT="https://YOUR.DOMAIN/$CODE"
+  printf "%s" "$SHORT" | /usr/bin/pbcopy
+  printf "%s" "$SHORT"
+else
+  printf "ERR: %s" "$RESP"
+fi
+```
+
+## iOS Shortcut (Share Sheet)
+
+Create a new Shortcut that accepts URLs from the share sheet and posts them to the API:
+
+1. New Shortcut → tap the **ⓘ** info button → enable **Show in Share Sheet**, set **Share Sheet Types** to **URLs only**.
+2. Add action **Get Contents of URL**:
+   - URL: `https://YOUR.DOMAIN/api/create`
+   - Method: **POST**
+   - Headers: `Authorization` = `Bearer YOURPASSWORD`, `Content-Type` = `application/json`
+   - Request Body: **JSON** with one field `url` (Text) = the **Shortcut Input** variable.
+3. Add action **Get Dictionary Value** → Get **Value for `code`** in **Contents of URL**.
+4. Add action **Text** with `https://YOUR.DOMAIN/` followed by the **Dictionary Value** variable.
+5. Add action **Copy to Clipboard** (input: the Text from step 4). Optionally add **Show Notification** to confirm.
+
+Rename the Shortcut (e.g. "Shorten Link"). Then from any app: Share → Shorten Link → the short URL is on your clipboard.
 
 ## License
 Do whatever you want I obviously wrote this with Claude 🤖
