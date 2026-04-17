@@ -1,5 +1,5 @@
 {
-  "name": "kyletns-shortener",
+  "name": "my-little-shortener",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {

@@ -1,4 +1,4 @@
-name = "kyletns-shortener"
+name = "my-little-shortener"
 main = "src/worker.js"
 compatibility_date = "2026-04-01"
 
@@ -11,7 +11,7 @@ id = "79886634ba0d438fb29230b7d7235c1d"
 
 # Custom domain routing — added after `wrangler deploy` via the
 # Cloudflare dashboard (Workers & Pages → this worker → Settings →
-# Domains & Routes → Add Custom Domain → kyletns.com).
+# Domains & Routes → Add Custom Domain → yourdomain.com).
 
 # ADMIN_PASSWORD is set as a secret, not here:
 #   echo "yourpasswordhere" | wrangler secret put ADMIN_PASSWORD

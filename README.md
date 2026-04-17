@@ -1,4 +1,4 @@
-# link.kyletns.com
+# My Little Shortener
 
 A tiny personal URL shortener running on a Cloudflare Worker + KV.
 

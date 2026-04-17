@@ -5,13 +5,12 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.slice(1);
 
-    if (path === "admin") return adminPage();
+    if (path === "admin" || path === "") return adminPage();
     if (path.startsWith("api/")) return handleApi(request, env, path.slice(4));
     if (path === "favicon.ico") return new Response(null, { status: 404 });
-    if (path === "") return Response.redirect("https://kyleschmolze.com", 302);
 
     const target = await env.LINKS.get(path);
-    if (!target) return Response.redirect("https://kyleschmolze.com", 302);
+    if (!target) return adminPage();
     return Response.redirect(target, 302);
   },
 };
